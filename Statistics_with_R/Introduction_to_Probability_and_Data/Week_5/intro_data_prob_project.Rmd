@@ -1,5 +1,5 @@
 ---
-title: "Exploring the BRFSS data"
+title: "Dr. Richard Davis: Exploration of the BRFSS data"
 output: 
   html_document: 
     fig_height: 4
@@ -37,25 +37,20 @@ load("brfss2013.RData.gz")
 
 **Research quesion 1:**
 
-**What is the mean, median, standard deviation, 25th%ile, 75%ile, and IQR of the number of hours that that Americans sleep? Plot the data. Is the curve normal? Is there skew? This question is of interest to me as a busy medical resident who has to be mindful of my sleep schedule, and due to emerging evidence that lack of sleep is a serious and common health problem in the United States.**
+**What is the mean, median, standard deviation, 25th%ile, 75%ile, and IQR of the number of hours that that Americans sleep? Plot the data. Is the curve normal? Is there skew?**
 
 **Research quesion 2:**
 
-**Smoking (S) is thought to be related to education level (E) and veteran status (V) with more educated people and non-veterans being less likely to smoke. Say a random person smokes more than 100 cigarettes in a year. a) What is the probability that this person has post-secondary education (i.e. at least attended college, P(S|E))? b) If that same person is a veteran, what is the probability he has some college (i.e. P(V|E))? c) Given a person is a veteran and has some college education, what is the probability he smokes 100 cigarettes per year P(S|V,E)? d) Finally, plot different probabilities of smoking given the four different combinations of veteran status and education level (i.e. P(S|V,E), P(S|V, ~E), P(S|~V,E), P(S|~V,~E)). What does this plot say about the effect of veteran status and education level on smoking? As someone who is a physician who deals with the consquences of smoking regularly, especially in our veteran population at the VA, this seemed an important  question.**
+**Smoking (S) is thought to be related to education level (E) and veteran status (V) with more educated people and non-veterans being less likely to smoke. Say a random person smokes more than 100 cigarettes in a year. a) What is the probability that this person has post-secondary education (i.e. at least attended college, P(S|E))? b) If that same person is a veteran, what is the probability he has some college (i.e. P(V|E))? c) Given a person is a veteran and has some college education, what is the probability he smokes 100 cigarettes per year P(S|V,E)? d) Finally, plot different probabilities of smoking given the four different combinations of veteran status and education level (i.e. P(S|V,E), P(S|V, ~E), P(S|~V,E), P(S|~V,~E)). What does this plot say about the effect of veteran status and education level on smoking? **
 
 **Research quesion 3:**
 
-**It is often thought that general overall health is related to diet and exercise. What percentage of people who both exercised in the past thirty days and ate at least 1 green vegetable per day, 3 green vegtables per week, or 15 green vegetables per month (i.e. regularly eat green vegetables or not) would rate their health as at least "Very good"? Given this percentage, what is the probability that in a random sample of 100 people, at least 6o people have at least very good health and a healthy lifestyle (i.e. exercise any in past 30 days and regularly eat green vegetables)?**
+**It is often thought that general overall health is related to diet and exercise. a) What percentage of people who both exercised in the past thirty days and ate at least 1 green vegetable per day, 4 green vegtables per week, or 15 green vegetables per month (i.e. regularly eat green vegetables or not) would rate their health as at least "Very good" (i.e. have a "very healthy lifestyle"). b) Given this percentage, what is the probability that in a random sample of 100 people, at least 25 people have a very healthy lifestyle (i.e. exercise any in past 30 days, regularly eat green vegetables, and rate their health as at least "Very good")?**
 
 
 * * *
 
 ## Part 3: Exploratory data analysis
-
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button (green button with orange arrow) above. Make sure that your code is visible
-in the project you submit. Delete this note when before you submit your work.
-
 **Research quesion 1:**
 
 ```{r}
@@ -91,9 +86,16 @@ sleepqq_plt<-ggplot(sleepdf, aes(sample=sleptim1))+geom_qq()+geom_qq_line() +lab
 sleepqq_plt
 ```
 
+**Summary for Research Question 1:**  
+ **-Mean sleep time: 7.05 hours**  
+ **-Median sleep time: 7 hours**  
+ **-Standard deviation of sleep time: 1.60**  
+ **-25%ile: 6**  
+ **-75%ile: 8**  
+ **-IQR: 6-8 **  
+ **-Narrative: This question was of interest to me because as a busy medical resident, the number of hours I sleep is often not ideal. As can be seen the plot is basically normal with a unimodal peak around 7 and a roughly equal, bell-shaped spread of values above and below the peak. The Q-Q plot further supports the normality assumption with some straying at the edges of the distribution. These data suggest that most Americans are not getting the suggested 8 hours per night.**  
 
-
-**Research quesion 2:**
+**Research question 2:**
 
 ```{r}
 #recode the "educa" variable to have 2 rather than 6 levels ("college", "no_college")
@@ -158,14 +160,14 @@ p_s_ve<-(p_v_se*p_s_e)/p_v_e
 
 ##Part d) Bar-plot of post-test probabilities vs. education and veteran status##
 #Conditional probabilities
-p_e0<-n_e0/n #check
-p_se0<-n_se0/n #check
-p_v0e<-n_v0e/n #check
-p_ve0<-n_ve0/n #check
-p_v0e0<-n_v0e0/n #check
-p_v0se<-n_v0se/n #check
-p_vse0<-n_vse0/n #check
-p_v0se0<-n_v0se0/n #check
+p_e0<-n_e0/n 
+p_se0<-n_se0/n 
+p_v0e<-n_v0e/n 
+p_ve0<-n_ve0/n 
+p_v0e0<-n_v0e0/n 
+p_v0se<-n_v0se/n 
+p_vse0<-n_vse0/n 
+p_v0se0<-n_v0se0/n 
 
 #More conditional probabilities
 p_s_e0<-p_se0/p_e0
@@ -198,14 +200,44 @@ prob.plot<-ggplot(prob.tibble, aes(x=label.vec, y=posttest.vec))+geom_bar(stat="
 prob.plot
 ```
 
-
+**Summary for Research Question 2**  
+ **-a) P(S|E)=0.426467**  
+ **-b) P(V|E)=0.126852**  
+ **-c) P(S|V,E)=0.59971**  
+ **-d) The bar plot of the conditional probabilities (i.e. P(S|V,e), P(S|~V,E), P(S|V,~E), P(S|~V,~E) demonstrates a clear association between smoking and both veteran status and education. While persons without some college education were more likely to smoke than the college-educated, those who were veterans were more likely to smoke than either non-veteran group, regardless of education. Causation is not demonstrated here because no random assignment is performed; however, the clear correlation (we have yet explored how to statistically test association) between veteran status and smoking may warrant special consideration of this group to reduce smoking rates.**
 
 **Research quesion 3:**
 
 ```{r}
-#probability of at least very good health
-n_hlth<-brfss2013$
-p_hlth
+##Part a) probability of very health lifestyle##
+#create a new df "healthy.df" that filters out NAs in "fvgreen", "genhlth" variables
+healthy.df<-brfss2013 %>% filter(!is.na(exerany2)) %>% filter(!is.na(fvgreen)) %>% filter(!is.na(genhlth))
+attach(healthy.df)
+#number with least very good healthy lifestyle (i.e. exercise in past 30 days, eat 1 green vegetable per day, 4 per week, or 15 per month, and rate health as "Excellent" or "Very good")
+n_hlth<-length(exerany2[(exerany2=="Yes") & ((fvgreen>=101 & fvgreen<=199) | (fvgreen>=204 & fvgreen<=299) | (fvgreen>=315 & fvgreen<=399)) & (genhlth=="Excellent" | genhlth=="Very good")])
+#total number of subjects (excluding NAs in 'fvgreen' and 'genhlth')
+n_tot_hlth<-length(fvgreen)
+#probability of a "Very healthy" lifestyle
+p_hlth<-n_hlth/n_tot_hlth #0.22179
 
+##Part b) ##
+#probability of >=25 people out of 100 having a healthy lifestyle
+hlth25<-1-pbinom(25, 100, p_hlth) #0.20971
+
+##Part c) ##
+#plot
+x <- seq(0,100, by=1)
+y <- dbinom(x, 100, p_hlth)
+bnm.tibble<-tibble(x, y)
+bnm.plot <- ggplot(bnm.tibble, aes(x = x, y = y)) + geom_bar(stat = "identity", col = "red", fill = "blue") + scale_y_continuous(expand = c(0.01, 0)) + xlab("x") + ylab("Density") + labs(title = "dbinom(x, 100, 0.20971)") + theme_bw(16, "serif") + theme(plot.title = element_text(size = rel(1.2), vjust = 1.5))
+
+#print plot
+bnm.plot
 ```
 
+**Summary for Rearch Question 3: **  
+ **-a) 0.2218=The probability that someone exercises any every 30 days, eats at least 1 green vegetable per day/4 per week/15 per month, and subjectively rates he rates his health as at least "Very good" (i.e. the probability of a "very healthy lifestyle").**  
+ 
+ **-b) 0.2097=The probability 25 people will have a "very healthy lifestyle" in a random sample of 100 Americans.**  
+ 
+ **-Narrative: A diet rich in fruits and vegetables and regular exercise are known to be contributors to good health and positive healthy outcomes. However, the obesity epidemic in the U.S. has contributed to many negative health outcomes, and I suspected most Americans do not eat a vegetable rich diet and exercise. Hence, only a minority of Americans would rate their health as "Very good" or excellent". Given the criteria in "part a)", less than 1/4 of Americans do these basic healthy behaviors and rate their health as at least "Very good". Furthermore, there is only about a 1 in 5 chance that 25% of the population will display these behaviors. Once again causation cannot be inferred that good diet and exercise leads to a subjective sense of "Very good" health; however, these data are striking. **
