@@ -1,0 +1,123 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(car)
+```
+
+### Load data
+
+```{r load-data}
+load("brfss2013.RData.gz")
+```
+
+
+* * *
+
+## Part 1: Data
+
+**This is a telephone survey of more than 400,000 people annually. Interviews are conducted using both landline and cellular phone based surveys. A random adult from each househould is selected to participate. Survey using landlines are implied to be conducted in private residences alone. Cell-phone surveys are explicitly of adults living in private residences and/or in college housing. Pertains to non-institutionalized individuals and adults 18 years of age and older. There are a few questions pertaining to children under 17 years of age relating to asthma.**
+
+**Review of the data does seem to indicate that random sampling was used. It appears that random households were contacted and that random adults from within that household were given the survey. Each state had a large population that was sampled that was weighted it seems due to the size of the state.A roughly equitable number of surveys were conducted in each month to account for possible differences in seasonality. A large dataset of over 400,000 individuals from all 50 U.S. states and several outlying territories with these aforementioned characteristics confers excellent generalizability to the study. However, since this is an observational study and not an experimental study, random assignment to any treatments and/or interventions is not possible given the design of the study. Therefore, while the study is generalizable to the U.S. population as a whole, it does not provide any information regarding causation. Several limitations are that phone calls were the medium for data retrieval. With the advent of social media, a mixture of phone calls and online surveys given over Facebook, email, etc. may have increased the generalizability. Furthermore, the paucity of questions asked of children and the exclusion of institutionalized patients could affect generalizability of these results to the youngest, oldest, and sickest members of the population.**
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+
+**What is the mean, median, standard deviation, 25th%ile, 75%ile, and IQR of the number of hours that that Americans sleep? Plot the data. Is the curve normal? Is there skew? This question is of interest to me as a busy medical resident who has to be mindful of my sleep schedule, and due to emerging evidence that lack of sleep is a serious and common health problem in the United States.**
+
+**Research quesion 2:**
+
+**Smoking (S) is thought to be related to education level (E) and veteran status (V) with more educated people and non-veterans being less likely to smoke. Say a random person smokes more than 100 cigarettes in a year. a) What is the probability that this person has post-secondary education (i.e. at least attended college, P(S|E))? b) If that same person is a veteran, what is the probability he has some college (i.e. P(V|E))? c) Given a person is a veteran and has some college education, what is the probability he smokes 100 cigarettes per year (P|V,E)? d) Finally, plot the post-test vs. pre-test probabilities given the same marginal probabilities for pre-test probabilities (0.10, 0.20, 0.20, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.0). How does the "likelihood" effect the post-test probability? As someone who is a physician who deals with the consquences of smoking regularly, especially in our veteran population at the VA, this seemed an important  question.**
+
+**Research quesion 3:**
+
+**It is often thought that general overall health is related to diet and exercise. What percentage of people who both exercised in the past thirty days and ate at least 1 green vegetable per day, 3 green vegtables per week, or 15 green vegetables per month (i.e. regularly eat green vegetables or not) would rate their health as at least "Very good"? Given this percentage, what is the probability that in a random sample of 100 people, at least 6o people have very good health and a healthy lifestyle (i.e. exercise any in past 30 days and regularly eat green vegetables)?**
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
+
+**Research quesion 1:**
+
+```{r}
+attach(brfss2013)
+#Create a new variable without 
+new_sleptim1<-sleptim1[!is.na(sleptim1)]
+#Mean
+mn_sleep<-mean(new_sleptim1)
+#Median
+md_sleep<-median(new_sleptim1)
+#Standard deviation
+sd_sleep<-sd(new_sleptim1)
+#25th%ile, 75th%ile
+prctle25_75<-quantile(new_sleptim1, probs=c(0.25, 0.75))
+detach(brfss2013)
+
+##plot a bar graph of the sleep time##
+#create data frame of sleep time vs. count#
+sleepdf<-brfss2013 %>% filter(sleptim1<=24 & !is.na(sleptim1)) %>% group_by(sleptim1) %>% summarise(count=n())
+
+#initial bar plot
+sleep_plt<-sleepdf %>% ggplot(aes(x=sleptim1, y=count))+geom_bar(stat = "identity")
+#change axis labels and give title
+sleep_plt.labs<-sleep_plt+labs(title="Number of Hours Americans Sleep", x="Hours Slept per Day", y="Number of People")
+
+#Call bar plot
+sleep_plt.labs
+
+##Plot a QQ_Plot##
+sleepqq_plt<-ggplot(sleepdf, aes(sample=sleptim1))+geom_qq()+geom_qq_line() +labs(title="Quantile-Quantile Plot of Average Hours of Sleep per Day")
+
+#Call QQ plot
+sleepqq_plt
+```
+
+
+
+**Research quesion 2:**
+
+```{r}
+#recode the "educa" variable to have 2 rather than 6 levels ("college", "no_college")
+brfss2013$educa<-recode(brfss2013$educa[brfss2013$educa], "c('Never attended school or only kindergarten', 'Grades 1 through 8 (Elementary)', 'Grades 9 through 11 (Some high school)', 'Grade 12 or GED (High school graduate)')='no_college'; c('College 1 year to 3 years (Some college or technical school)', 'College 4 years or more (College graduate)')='college'")
+
+#Create a data frame with all the conditional probabilities
+EdVetSmoke.df<-brfss2013 %>% filter(!is.na(smoke100)) %>% filter(!is.na(educa)) %>% filter(!is.na(veteran3)) %>% group_by(smoke100, educa, veteran3) %>% summarise(count=n())
+
+##Part a) Smoking given college P(S|E) marginal probability##
+#total number of smokers who went to college
+n_sc<-sum(EdVetSmoke.df$count[EdVetSmoke.df$educa=="college" & EdVetSmoke.df$smoke100=="Yes"])
+#total number who went to college
+n_c<-sum(EdVetSmoke.df$count[EdVetSmoke.df$educa=="college"])
+#P(S|E)
+p_sc<-n_sc/n_c
+
+##Part b) Veteran given college P(V|E) marginal probability##
+```
+
+
+
+**Research quesion 3:**
+
+```{r}
+
+```
+
